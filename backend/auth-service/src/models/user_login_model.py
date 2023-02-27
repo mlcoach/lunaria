@@ -14,4 +14,3 @@ class UserLoginModel(Model):
     passwordRecoveryTokenExpiration = DateTime(required=False)
     created_at = DateTime()
     updated_at = DateTime()
-    name = "UserLoginModel"
