@@ -13,5 +13,5 @@ class UserModel(Model):
     is_superuser = Boolean(default=False)
     created_at = DateTime()
     updated_at = DateTime()
-
+    name = "UserModel"
 # for account service

@@ -5,13 +5,13 @@ import uuid
 class UserLoginModel(Model):
     __keyspace__ = 'users'
     uid = UUID(primary_key=True, default=uuid.uuid4)
-    username = Text(required=True)
     passwordHash = Text(required=True)
     passwordSalt = Text(required=True)
-    confirmationToken = Text(required=True)
-    confirmationTokenExpiration = DateTime(required=True)
-    emailVerified = Boolean(required=True)
-    passwordRecoveryToken = Text(required=True) 
-    passwordRecoveryTokenExpiration = DateTime(required=True)
+    confirmationToken = Text(required=False)
+    confirmationTokenExpiration = DateTime(required=False)
+    emailVerified = Boolean(required=False)
+    passwordRecoveryToken = Text(required=False) 
+    passwordRecoveryTokenExpiration = DateTime(required=False)
     created_at = DateTime()
     updated_at = DateTime()
+    name = "UserLoginModel"
