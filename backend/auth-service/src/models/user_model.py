@@ -2,6 +2,7 @@ from cassandra.cqlengine.columns import *
 from cassandra.cqlengine.models import Model
 import uuid
 class UserModel(Model):
+    __keyspace__ = 'users'
     uid = UUID(primary_key=True, default=uuid.uuid4)
     username = Text(required=True)
     email = Text(required=True)
@@ -12,8 +13,5 @@ class UserModel(Model):
     is_superuser = Boolean(default=False)
     created_at = DateTime()
     updated_at = DateTime()
-
-    def __init__(self, **kwargs):
-        self.__dict__.update(kwargs)
 
 # for account service

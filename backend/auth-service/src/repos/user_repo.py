@@ -1,20 +1,21 @@
 from models.user_model import UserModel
 
 class UserRepository():
-    def __init__(self, cluster, keyspace):
-        self.session = cluster.connect(keyspace)
+    def __init__(self, session):
+        self.session = session
 
-    def get(self, user_id):
-        return self.session.execute("SELECT * FROM clients WHERE id = %s", (user_id,))
+    def get(self, username):
+        return self.session.execute("SELECT * FROM user_model WHERE username = %s", (username,)).one()
     
     def get_all(self):
-        return self.session.execute("SELECT * FROM clients")
+        return self.session.execute("SELECT * FROM users")
     
     def create(self, user):
+
         pass
     
     def update(self, user):
       pass
     
     def delete(self, user_id):
-        return self.session.execute("DELETE FROM clients WHERE id = %s", (user_id,))
+        return self.session.execute("DELETE FROM users WHERE id = %s", (user_id,))

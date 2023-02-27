@@ -1,17 +1,19 @@
 from repos.user_repo import UserRepository
-from utilities.model_mapper import ModelMapper
+from models.user_model import UserModel
 
 
 class UserService():
     
     user_repository:UserRepository = None
-    model_mapper:ModelMapper = ModelMapper()
 
     def __init__(self, user_repository):
         self.user_repository = user_repository
     
-    def get_user(self, user_id):
-        return self.user_repository.get(user_id)
+    def get_user(self, username):
+        try:
+            return self.user_repository.get(username)
+        except Exception as e:
+            raise e
     
     def get_users(self):
         return self.user_repository.get_all()

@@ -3,7 +3,7 @@ from cassandra.cqlengine.models import Model
 import uuid
 
 class UserLoginModel(Model):
-    __keyspace__ = 'clients'
+    __keyspace__ = 'users'
     uid = UUID(primary_key=True, default=uuid.uuid4)
     username = Text(required=True)
     passwordHash = Text(required=True)
