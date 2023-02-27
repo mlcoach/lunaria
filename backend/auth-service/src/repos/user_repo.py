@@ -4,13 +4,20 @@ class UserRepository():
     def __init__(self, session):
         self.session = session
 
-    def get(self, username):
-        return self.session.execute("SELECT * FROM user_model WHERE username = %s", (username,)).one()
+    def get(self, model, filterValue):
+        try:
+            responses = self.get_all(model)
+            response = list(filter(filterValue, responses))
+            if response:
+                return response[0]
+            raise Exception("Record not found")
+        except Exception as e:
+            raise e
+        
+    def get_all(self, model):
+        return model.objects().all()
     
-    def get_all(self):
-        return self.session.execute("SELECT * FROM users")
-    
-    def create(self, user):
+    def create(self, user, filterValue):
 
         pass
     
