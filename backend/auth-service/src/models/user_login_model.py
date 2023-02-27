@@ -5,7 +5,6 @@ import uuid
 class UserLoginModel(Model):
     __keyspace__ = 'users'
     uid = UUID(primary_key=True, default=uuid.uuid4)
-    username = Text(required=True)
     passwordHash = Text(required=True)
     passwordSalt = Text(required=True)
     confirmationToken = Text(required=True)
