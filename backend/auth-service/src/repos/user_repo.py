@@ -17,9 +17,16 @@ class UserRepository():
     def get_all(self, model):
         return model.objects().all()
     
-    def create(self, user, filterValue):
-
-        pass
+    def create(self, user,model ,filterValue):
+        try:
+            response = self.get(model, filterValue)
+            if response:
+                raise Exception("Record already exists")
+        except Exception as e:
+            if "Record not found" in str(e):
+                user.save()
+            else:
+                raise e
     
     def update(self, user):
       pass

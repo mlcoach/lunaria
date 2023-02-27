@@ -3,6 +3,7 @@ import fastapi
 from fastapi.responses import JSONResponse
 from fastapi import status
 from dto.login.user_login_request_dto import UserLoginRequestDTO
+from dto.register.user_register_request_dto import UserRegisterRequestDTO
 from models.user_login_model import UserLoginModel
 from models.user_model import UserModel
 from services.user_service import UserService
@@ -51,7 +52,7 @@ async def login(request: fastapi.Request, userDTO: UserLoginRequestDTO):
             token = jwt.encode(payload, str(secret_key), algorithm="HS256")
             return JSONResponse(status_code=status.HTTP_200_OK, content={
                 "token": token,
-                "expires": datetime.datetime.utcnow() + datetime.timedelta(minutes=30),
+                "expires": str(datetime.datetime.utcnow() + datetime.timedelta(minutes=30)),
             })
         else:
             return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={
@@ -63,12 +64,34 @@ async def login(request: fastapi.Request, userDTO: UserLoginRequestDTO):
             })
 
 @app.post("/auth/register", status_code=201)
-@limiter.limit("5/minute")
-async def register(request: fastapi.Request, userDTO):
-    #todo: validate user
+@limiter.limit("50/minute")
+async def register(request: fastapi.Request, userDTO:UserRegisterRequestDTO):
+    
     #todo: create user
-    #todo: return jwt token
-    pass
+    try: 
+        user_service.create_user(userDTO)  
+
+        user = user_service.get_user_by_username(UserModel, userDTO.username)
+        payload = {
+            "username": user.username,
+            "uid": str(user.uid),
+            "email": user.email,
+            "firstName": user.firstName,
+            "lastName": user.lastName,
+            "role": str(user.role),
+            "is_active": user.is_active,
+            "is_superuser": user.is_superuser,
+        }
+        token = jwt.encode(payload, str(secret_key), algorithm="HS256")
+        return JSONResponse(status_code=status.HTTP_201_CREATED, content={
+            "token": token,
+            "expires": str(datetime.datetime.utcnow() + datetime.timedelta(minutes=30)),
+        })
+    except Exception as e:
+        return JSONResponse(status_code=status.HTTP_409_CONFLICT, content={
+            "message": str(e)
+        })
+ 
 
 @app.get("/auth/verify", status_code=200)
 @limiter.limit("5/minute")

@@ -37,7 +37,6 @@ class UserService():
             self.user_repository.create(login_model,
                                         UserLoginModel,
                                         lambda x: x.uid == user_model.uid)
-            return login_model
         except Exception as e:
             raise e
 
