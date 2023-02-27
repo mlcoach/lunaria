@@ -4,8 +4,8 @@ import uuid
 class UserModel(Model):
     __keyspace__ = 'users'
     uid = UUID(primary_key=True, default=uuid.uuid4)
-    username = Text(required=True)
-    email = Text(required=True)
+    username = Text(required=True, primary_key=True)
+    email = Text(required=True, primary_key=True)
     firstName = Text(required=True)
     lastName = Text(required=True)
     role = UUID(required=True, default=uuid.uuid4)
