@@ -1,3 +1,4 @@
+import datetime
 from models.user_model import UserModel
 
 class UserRepository():
@@ -24,12 +25,14 @@ class UserRepository():
                 raise Exception("Record already exists")
         except Exception as e:
             if "Record not found" in str(e):
+                user.created_at = datetime.datetime.now()
+                user.updated_at = datetime.datetime.now()
                 user.save()
             else:
                 raise e
     
-    def update(self, user):
-      pass
-    
+    def update(self, user,model,uid):
+        model.objects(uid = uid).update(**user)
+        
     def delete(self, user_id):
         return self.session.execute("DELETE FROM users WHERE id = %s", (user_id,))
