@@ -10,6 +10,7 @@ from services.user_service import UserService
 from repos.user_repo import UserRepository
 from cassandra.cluster import Cluster
 from cassandra.cqlengine import connection
+# from cassandra.cqlengine.management import sync_table
 import jwt
 import os
 import hashlib
@@ -22,8 +23,8 @@ from slowapi.util import get_remote_address
 user_service:UserService = UserService(user_repository=UserRepository(session=Cluster().connect('users')))
 connection.setup(['127.0.0.1'], "cqlengine", protocol_version=3)
 
-
-
+# sync_table(UserModel)
+# sync_table(UserLoginModel)
 
 secret_key = os.environ.get('SECRET_KEY')
 
@@ -33,11 +34,23 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 
+@app.get("/")
+async def root():
+    return {"message": "Service is running..."}
+
+
 @app.post("/auth/login", status_code=200)
 @limiter.limit("5/minute")
 async def login(request: fastapi.Request, userDTO: UserLoginRequestDTO):
     try:
-        user = user_service.get_user_by_username(UserModel, userDTO.username)
+        if(userDTO.username == None and userDTO.email != None):
+            user = user_service.get_user_by_email(UserModel, userDTO.email)
+        elif(userDTO.username != None and userDTO.email == None):
+            user = user_service.get_user_by_username(UserModel, userDTO.username)
+        else:
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={
+                "message": "Invalid request"
+            })
         if validatePassword(user.uid, userDTO.password):
             payload = {
                 "username": user.username,
@@ -52,7 +65,7 @@ async def login(request: fastapi.Request, userDTO: UserLoginRequestDTO):
             token = jwt.encode(payload, str(secret_key), algorithm="HS256")
             return JSONResponse(status_code=status.HTTP_200_OK, content={
                 "token": token,
-                "expires": str(datetime.datetime.utcnow() + datetime.timedelta(minutes=30)),
+                "expires": str(datetime.datetime.utcnow() + datetime.timedelta(days=10)),
             })
         else:
             return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={
@@ -64,10 +77,8 @@ async def login(request: fastapi.Request, userDTO: UserLoginRequestDTO):
             })
 
 @app.post("/auth/register", status_code=201)
-@limiter.limit("50/minute")
+@limiter.limit("5/minute")
 async def register(request: fastapi.Request, userDTO:UserRegisterRequestDTO):
-    
-    #todo: create user
     try: 
         user_service.create_user(userDTO)  
 
@@ -85,7 +96,7 @@ async def register(request: fastapi.Request, userDTO:UserRegisterRequestDTO):
         token = jwt.encode(payload, str(secret_key), algorithm="HS256")
         return JSONResponse(status_code=status.HTTP_201_CREATED, content={
             "token": token,
-            "expires": str(datetime.datetime.utcnow() + datetime.timedelta(minutes=30)),
+            "expires": str(datetime.datetime.utcnow() + datetime.timedelta(days=10)),
         })
     except Exception as e:
         return JSONResponse(status_code=status.HTTP_409_CONFLICT, content={
@@ -93,10 +104,9 @@ async def register(request: fastapi.Request, userDTO:UserRegisterRequestDTO):
         })
  
 
-@app.get("/auth/verify", status_code=200)
+@app.post("/auth/verify", status_code=200)
 @limiter.limit("5/minute")
-async def verify(request: fastapi.Request):
-    token = request.headers['Authorization'].replace('Bearer ', '')
+async def verify(request: fastapi.Request, token: str):
     try:
         jwt.decode(token, str(secret_key), algorithms=["HS256"])
         return JSONResponse(status_code=status.HTTP_200_OK, content={

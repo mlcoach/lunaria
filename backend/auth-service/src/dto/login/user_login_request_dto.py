@@ -1,8 +1,10 @@
 from pydantic import BaseModel, Field
+from typing import Optional
+
 
 class UserLoginRequestDTO(BaseModel):
-    username: str = Field(..., max_length=15)
-    password: str= Field(..., min_length=3, max_length=32)
-    email: str= Field(..., max_length=32)
+    username: str | None = Field(default=None, min_length=3, max_length=32, regex="^[a-zA-Z0-9_]*$")
+    password: str= Field(..., min_length=3, max_length=32, regex="^[a-zA-Z0-9_]*$")
+    email: str | None = Field(default=None, min_length=3, max_length=32, regex=r"([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+")
     
     

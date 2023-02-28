@@ -1,9 +1,10 @@
 import datetime
 import hashlib
+import uuid
 from models.user_login_model import UserLoginModel
 from repos.user_repo import UserRepository
 from models.user_model import UserModel
-
+import os
 
 class UserService():
     
@@ -17,7 +18,13 @@ class UserService():
             return self.user_repository.get(model, lambda x: x.username == username)
         except Exception as e:
             raise Exception("User not found")
-    
+        
+    def get_user_by_email(self, model, email):
+        try:
+            return self.user_repository.get(model, lambda x: x.email == email)
+        except Exception as e:
+            raise Exception("User not found")
+        
     def get_user_by_id(self, model, user_id):
         try:
             return self.user_repository.get(model, lambda x: x.uid == user_id)
@@ -54,10 +61,11 @@ class UserService():
         )
 
     def create_user_login_model(self, user, uid):
+        v4 = uuid.uuid4().hex
         return UserLoginModel(
             uid = uid,
-            passwordSalt = user.password,
-            passwordHash = hashlib.sha256(user.password.encode()).hexdigest(),
+            passwordSalt = v4,
+            passwordHash = hashlib.sha256((user.password+v4).encode('utf-8')).hexdigest(),
             created_at = datetime.datetime.now(),
             updated_at = datetime.datetime.now(),          
         )
