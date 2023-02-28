@@ -1,7 +1,9 @@
 
-from pydantic import BaseModel, Field
+from dataclasses import dataclass
+from pydantic import  Field
 
-class UserRegisterRequestDTO(BaseModel):
+@dataclass
+class UserRegisterRequestDTO():
     username: str = Field(..., min_length=3, max_length=15, regex="^[a-zA-Z0-9_]*$")
     password: str = Field(..., min_length=3, max_length=32, regex="^[a-zA-Z0-9_]*$")
     email: str= Field(..., min_length=3, max_length=32,regex=r"([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+")
@@ -11,5 +13,7 @@ class UserRegisterRequestDTO(BaseModel):
     is_active: bool
     is_superuser: bool
     
+    def __getattribute__(self, __name: str):
+        return super().__getattribute__(__name)
     
-    
+  
