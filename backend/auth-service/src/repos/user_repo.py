@@ -31,8 +31,13 @@ class UserRepository():
             else:
                 raise e
     
-    def update(self, user,model,uid):
-        model.objects(uid = uid).update(**user)
+    def update(self, model, user_id, arg_dict):
+        try:
+            #update the user by given args_dict
+            model.objects(uid=user_id).update(**arg_dict)
+        except Exception as e:
+            if ""'uid'"" in str(e):
+                raise Exception("Record not found")
         
     def delete(self, user_id):
         return self.session.execute("DELETE FROM users WHERE id = %s", (user_id,))
