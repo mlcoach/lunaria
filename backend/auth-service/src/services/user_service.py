@@ -1,5 +1,7 @@
 import datetime
 import hashlib
+
+from pyparsing import Optional
 from dto.register.user_register_request_dto import UserRegisterRequestDTO
 from models.user_login_model import UserLoginModel
 from repos.user_repo import UserRepository
@@ -49,9 +51,9 @@ class UserService():
             raise e
 
     
-    def update_user(self, user, model,uid):
-        user.updated_at = datetime.datetime.now()
-        return self.user_repository.update(user, model, lambda x: x.uid == uid)
+    def update_user(self, model: UserModel | UserLoginModel, uid : str | None,  args: dict) -> None:
+        args["updated_at"] = datetime.datetime.now()
+        self.user_repository.update(model, uid, args)
 
     def delete_user(self, user_id):
         return self.user_repository.delete(user_id)
