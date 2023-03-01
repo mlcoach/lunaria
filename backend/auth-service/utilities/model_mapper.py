@@ -1,7 +1,5 @@
 import hashlib
-import os
 import uuid
-from dto.register.user_register_request_dto import UserRegisterRequestDTO
 from models.user_login_model import UserLoginModel
 
 def map_schema(model, to_model):
