@@ -4,23 +4,17 @@ import os
 import pickle
 import random
 import string
-# Gmail API utils
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
-# for encoding/decoding messages in base64
-from base64 import urlsafe_b64decode, urlsafe_b64encode
-# for dealing with attachement MIME types
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.mime.image import MIMEImage
-from email.mime.audio import MIMEAudio
-from email.mime.base import MIMEBase
+from base64 import urlsafe_b64encode
+
 
 import jwt
 from models.user_login_model import UserLoginModel
 from requests import HTTPError
 import os
+
 SCOPES = ['https://mail.google.com/']
 GMAIL = str(os.getenv('GMAIL'))
 secret_key = str(os.getenv('SECRET_KEY'))
@@ -49,7 +43,7 @@ class EmailVerification:
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
             else:
-                flow = InstalledAppFlow.from_client_secrets_file('C:/egitim/lunaria/backend/auth-service/src/api/google_api/credentials.json', SCOPES)
+                flow = InstalledAppFlow.from_client_secrets_file('C:/Users/terr0raid/Desktop/proje/lunaria/backend/auth-service/src/api/google_api/credentials.json', SCOPES)
                 creds = flow.run_local_server(port = 0)
             with open('token.pickle', 'wb') as token:
                 pickle.dump(creds, token)

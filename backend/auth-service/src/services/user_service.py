@@ -3,6 +3,7 @@ import hashlib
 
 from pyparsing import Optional
 from dto.register.user_register_request_dto import UserRegisterRequestDTO
+from dto.user_response_dto import UserResponseDTO
 from models.user_login_model import UserLoginModel
 from repos.user_repo import UserRepository
 from models.user_model import UserModel
@@ -35,8 +36,25 @@ class UserService():
         except Exception as e:
             raise Exception("User not found")
 
-    def get_users(self, model):
-        return self.user_repository.get_all(model)
+    def get_users(self):
+        queries = self.user_repository.get_all(UserModel)
+        users = []
+        for user in queries:
+           users.append(self.mapToUserResponseModel(user))
+        return users
+
+    def mapToUserResponseModel(self, user):
+        role = self.get_user_role_by_id(user.role).name
+        return UserResponseDTO(
+            uid=str(user.uid),
+            username=user.username,
+            email=user.email,
+            firstName=user.firstName,
+            lastName=user.lastName,
+            role=role,
+            is_active=user.is_active,
+            is_superuser=user.is_superuser,
+        )
 
     
     def get_user_role_by_id(self, user_role_id):
