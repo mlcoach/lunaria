@@ -18,7 +18,8 @@ import os
 SCOPES = ['https://mail.google.com/']
 GMAIL = str(os.getenv('GMAIL'))
 secret_key = str(os.getenv('SECRET_KEY'))
-
+path = str(os.getenv('CREDENTIALS_PATH'))
+           
 class EmailVerification:
     def __init__(self,user_email : str, user: UserLoginModel) -> None:
         self.service = self.gmail_authenticate()
@@ -43,7 +44,7 @@ class EmailVerification:
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
             else:
-                flow = InstalledAppFlow.from_client_secrets_file('C:/Users/terr0raid/Desktop/proje/lunaria/backend/auth-service/src/api/google_api/credentials.json', SCOPES)
+                flow = InstalledAppFlow.from_client_secrets_file(path, SCOPES)
                 creds = flow.run_local_server(port = 0)
             with open('token.pickle', 'wb') as token:
                 pickle.dump(creds, token)
