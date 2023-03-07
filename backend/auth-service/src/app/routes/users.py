@@ -7,6 +7,9 @@ from models.user_login_model import UserLoginModel
 from dto.register.user_register_request_dto import UserRegisterRequestDTO
 from api.google_api.email_verification import EmailVerification
 
+from models.error_model import ErrorModel
+from constants.error_enum import ErrorEnum
+
 from ..dependencies import auth_required, limiter, user_service
 
 router = APIRouter(
@@ -51,13 +54,15 @@ async def get_user(uid: UUID, request: Request):
 async def create_user(request: Request, userDTO: UserRegisterRequestDTO):
     try:
         user_service.create_user(userDTO)
-    except Exception as e:
-        if "Record already exists" in str(e):
+    except ErrorModel as e:
+        if e.status_code == ErrorEnum.USER_ALREADY_EXISTS.value:
             return JSONResponse(status_code=status.HTTP_409_CONFLICT, content={
                                 "message": str(e)
                                 })
         else:
-            raise e
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={
+                                "message": str(e)
+                                })
     try:
         user = user_service.get_user_by_username(UserModel, userDTO.username)
         verifiable_user = user_service.get_user_by_id(UserLoginModel, user.uid)
@@ -69,7 +74,9 @@ async def create_user(request: Request, userDTO: UserRegisterRequestDTO):
         return JSONResponse(status_code=status.HTTP_201_CREATED, content=payload)
 
     except Exception as e:
-        raise Exception(e)
+        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={
+            "message": str(e)
+        })
 
 
 @router.put("/{uid}", status_code=200)

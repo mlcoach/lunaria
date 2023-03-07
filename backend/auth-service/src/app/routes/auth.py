@@ -11,11 +11,11 @@ from dto.login.user_login_request_dto import UserLoginRequestDTO
 from models.user_login_model import UserLoginModel
 from dto.register.user_register_request_dto import UserRegisterRequestDTO
 from api.google_api.email_verification import EmailVerification
+from models.error_model import ErrorModel
 
 router = APIRouter(
     prefix="/auth",
     tags=["auth"],
-    responses={404: {"description": "Not found"}},
 )
 
 
@@ -55,13 +55,11 @@ async def login(request: Request, userDTO: UserLoginRequestDTO):
 async def register(request: Request, userDTO: UserRegisterRequestDTO):
     try:
         user_service.create_user(userDTO)
-    except Exception as e:
-        if "Record already exists" in str(e):
-            return JSONResponse(status_code=status.HTTP_409_CONFLICT, content={
-                                "message": str(e)
-                                })
-        else:
-            raise e
+    except ErrorModel as e:
+        return JSONResponse(status_code=status.HTTP_409_CONFLICT, content={
+            "message": str(e.message)
+        })
+
     try:
         user = user_service.get_user_by_username(UserModel, userDTO.username)
         verifiable_user = user_service.get_user_by_id(UserLoginModel, user.uid)
@@ -72,8 +70,10 @@ async def register(request: Request, userDTO: UserRegisterRequestDTO):
         email.send()
         return JSONResponse(status_code=status.HTTP_201_CREATED, content=payload)
 
-    except Exception as e:
-        raise Exception(e)
+    except ErrorModel as e:
+        return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content={
+            "message": str(e.message)
+        })
 
 
 @router.post("/verify", status_code=200)
@@ -117,7 +117,9 @@ async def verify(request: Request, token: str):
             return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={
                 "message": "Invalid token"
             })
+    except ErrorModel as e:
+        return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={
+            "message": str(e.message)
+        })
     except Exception as e:
-        if "Signature has expired" in str(e):
-            return templates.TemplateResponse("expired.html", {"request": request})
-        raise Exception(e)
+        return templates.TemplateResponse("expired.html", {"request": request})

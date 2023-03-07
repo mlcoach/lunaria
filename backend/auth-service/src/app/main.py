@@ -13,7 +13,7 @@ from .routes.auth import router as auth_router
 from .routes.users import router as users_router
 
 
-app = FastAPI( title="Auth Service", version="1.0.0")
+app = FastAPI(title="Auth Service", version="1.0.0")
 
 path = Path(__file__).with_name("log_conf.conf").resolve()
 
@@ -35,7 +35,7 @@ async def startup_event():
             "service_name": "service_name",
             "service_url": "http://localhost:5000/api/v1",
             "user_count": 0
-            })
+        })
     except:
         return
         exit()
@@ -46,12 +46,10 @@ async def shutdown_event():
     try:
         requests.delete("http://localhost:5432/registry", json={
             "service_url": "http://localhost:5000/api/v1",
-            })
+        })
     except:
         return
         exit()
-
-
 
 
 @app.get("/")

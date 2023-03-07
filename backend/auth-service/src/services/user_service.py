@@ -6,6 +6,8 @@ from models.user_login_model import UserLoginModel
 from repos.user_repo import UserRepository
 from models.user_model import UserModel
 from models.role_model import UserRoles
+from models.error_model import ErrorModel
+from constants.error_enum import ErrorEnum
 from utilities.model_mapper import map_schema
 
 
@@ -20,25 +22,28 @@ class UserService():
         try:
             return self.user_repository.get(model, lambda x: x.username == username)
         except Exception as e:
-            raise Exception("User not found")
+            raise ErrorModel(ErrorEnum.USER_NOT_FOUND,
+                             ErrorEnum.USER_NOT_FOUND.value)
 
     def get_user_by_email(self, model, email):
         try:
             return self.user_repository.get(model, lambda x: x.email == email)
         except Exception as e:
-            raise Exception("User not found")
+            raise ErrorModel(ErrorEnum.USER_NOT_FOUND,
+                             ErrorEnum.USER_NOT_FOUND.value)
 
     def get_user_by_id(self, model, user_id):
         try:
             return self.user_repository.get(model, lambda x: x.uid == user_id)
         except Exception as e:
-            raise Exception("User not found")
+            raise ErrorModel(ErrorEnum.USER_NOT_FOUND,
+                             ErrorEnum.USER_NOT_FOUND.value)
 
     def get_users(self):
         queries = self.user_repository.get_all(UserModel)
         users = [self.mapToUserResponseModel(user) for user in queries]
         return users
-    
+
     def mapToUserResponseModel(self, user):
         role = self.get_user_role_by_id(user.role).name
         return UserResponseDTO(
@@ -55,13 +60,13 @@ class UserService():
         try:
             return self.user_repository.get(UserRoles, lambda x: x.uid == user_role_id)
         except Exception as e:
-            raise Exception(e)
+            raise e
 
     def get_user_role_by_name(self, role_name: str):
         try:
             return self.user_repository.get(UserRoles, lambda x: x.name == role_name)
         except Exception as e:
-            raise Exception(e)
+            raise e
 
     def get_all_user_roles(self):
         return self.user_repository.get_all(UserRoles)
@@ -91,8 +96,8 @@ class UserService():
             user_model = map_schema(user, UserModel)
             user_login_model = map_schema(user, UserLoginModel)
             user_login_model.uid = user_model.uid
-            user_role_uid= self.get_user_role_by_name("user").uid
+            user_role_uid = self.get_user_role_by_name("user").uid
             user_model.role = user_role_uid
             return user_model, user_login_model
         except Exception as e:
-            raise Exception(e)
+            raise e
