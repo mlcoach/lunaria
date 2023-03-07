@@ -1,6 +1,7 @@
 from pydantic import Field
 from dataclasses import dataclass
 
+
 @dataclass
 class UserResponseDTO():
     uid: str

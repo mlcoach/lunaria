@@ -15,6 +15,7 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+
 @router.get("/", status_code=200)
 @auth_required(allowed_roles=['admin'])
 @limiter.limit("10/minute")
@@ -48,19 +49,19 @@ async def get_user(user_id: UUID, request: Request):
 @router.post("/", status_code=201)
 @limiter.limit("10/minute")
 async def create_user(request: Request, userDTO: UserRegisterRequestDTO):
-    try: 
-        user_service.create_user(userDTO)  
+    try:
+        user_service.create_user(userDTO)
     except Exception as e:
         if "Record already exists" in str(e):
             return JSONResponse(status_code=status.HTTP_409_CONFLICT, content={
                                 "message": str(e)
-                            })
+                                })
         else:
             raise e
     try:
         user = user_service.get_user_by_username(UserModel, userDTO.username)
         verifiable_user = user_service.get_user_by_id(UserLoginModel, user.uid)
-        email = EmailVerification(user.email,verifiable_user)
+        email = EmailVerification(user.email, verifiable_user)
         payload = {
             "uid": str(user.uid)
         }
@@ -68,7 +69,7 @@ async def create_user(request: Request, userDTO: UserRegisterRequestDTO):
         return JSONResponse(status_code=status.HTTP_201_CREATED, content=payload)
 
     except Exception as e:
-            raise Exception(e)
+        raise Exception(e)
 
 
 @router.put("/{id}", status_code=200)

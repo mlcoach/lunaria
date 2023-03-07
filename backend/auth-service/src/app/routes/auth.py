@@ -23,16 +23,18 @@ router = APIRouter(
 @limiter.limit("5/minute")
 async def login(request: Request, userDTO: UserLoginRequestDTO):
     try:
-        if(userDTO.username == None and userDTO.email != None):
+        if userDTO.username is None and userDTO.email is not None:
             user = user_service.get_user_by_email(UserModel, userDTO.email)
-        elif(userDTO.username != None and userDTO.email == None):
-            user = user_service.get_user_by_username(UserModel, userDTO.username)
+        elif userDTO.username is not None and userDTO.email is None:
+            user = user_service.get_user_by_username(
+                UserModel, userDTO.username)
         else:
             return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={
                 "message": "Invalid request"
             })
         if validatePassword(user.uid, userDTO.password):
-            payload = dataclasses.asdict(user_service.mapToUserResponseModel(user))
+            payload = dataclasses.asdict(
+                user_service.mapToUserResponseModel(user))
             token = jwt.encode(payload, str(secret_key), algorithm="HS256")
             return JSONResponse(status_code=status.HTTP_200_OK, content={
                 "token": token,
@@ -44,9 +46,9 @@ async def login(request: Request, userDTO: UserLoginRequestDTO):
             })
     except Exception as e:
        return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={
-                "message": str(e)
-            })
-    
+           "message": str(e)
+       })
+
 
 @router.post("/verify", status_code=200)
 @limiter.limit("5/minute")
@@ -56,27 +58,32 @@ async def verify(request: Request, token: str):
         return JSONResponse(status_code=status.HTTP_200_OK, content={
             "message": "Valid token"
         })
-    
+
     except Exception as e:
         return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={
             "message": "Invalid token"
         })
 
+
 @router.get("/verify/{email-token}", status_code=200)
 @limiter.limit("50/minute")
 async def verify(request: Request, email_token: str):
     try:
-        decoded_token = jwt.decode(email_token, str(secret_key), algorithms=["HS256"])
-        user = user_service.get_user_by_id(UserLoginModel, UUID(decoded_token['user_id']))
-        if datetime.datetime.utcnow() > datetime.datetime.fromtimestamp(decoded_token['exp']):
+        decoded_token = jwt.decode(email_token, str(
+            secret_key), algorithms=["HS256"])
+        user = user_service.get_user_by_id(
+            UserLoginModel, UUID(decoded_token['user_id']))
+
+        exp = datetime.datetime.fromtimestamp(decoded_token['exp'])
+        if datetime.datetime.utcnow() > exp:
             return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={
                 "message": "Expired token"
             })
         if user.confirmationToken == email_token:
             user_service.update_user(UserLoginModel, user.uid,  {"confirmationToken": None,
-                                                                      "confirmationTokenExpiration": None,
-                                                                      "emailVerified": True
-                                                                      })
+                                                                 "confirmationTokenExpiration": None,
+                                                                 "emailVerified": True
+                                                                 })
             return templates.TemplateResponse("verification.html", {"request": request})
         elif user.confirmationToken == None:
             return templates.TemplateResponse("already_verified.html", {"request": request})
@@ -88,5 +95,3 @@ async def verify(request: Request, email_token: str):
         if "Signature has expired" in str(e):
             return templates.TemplateResponse("expired.html", {"request": request})
         raise Exception(e)
-        
-

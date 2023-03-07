@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .dependencies import limiter
 from .routes.auth import router as auth_router
-from .routes.users import router as users_router 
+from .routes.users import router as users_router
 
 from models.role_model import UserRoles
 
@@ -29,6 +29,3 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 @app.get("/")
 async def root():
     return {"message": "Service is running..."}
-
-
-

@@ -17,11 +17,13 @@ from models.user_model import UserModel
 
 limiter = Limiter(key_func=get_remote_address)
 
-user_service = UserService(user_repository=UserRepository(session=Cluster().connect('users')))
+user_service = UserService(user_repository=UserRepository(
+    session=Cluster().connect('users')))
 
 secret_key = os.environ.get('SECRET_KEY')
 
 templates = Jinja2Templates(directory="templates")
+
 
 def validatePassword(user_id, password):
     user = user_service.get_user_by_id(UserLoginModel, user_id)
@@ -30,11 +32,12 @@ def validatePassword(user_id, password):
     else:
         return False
 
+
 def hashPassword(password):
     return sha256((password).encode('utf-8')).hexdigest()
 
 
-def auth_required(allowed_roles:list[str]):
+def auth_required(allowed_roles: list[str]):
     def wrapper(func):
         @wraps(func)
         async def wrapped(*args, **kwargs):
@@ -61,7 +64,6 @@ def auth_required(allowed_roles:list[str]):
                         "message": "User is not active"
                     })
             except Exception as e:
-                print(e)
                 return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={
                     "message": "Invalid token"
                 })
