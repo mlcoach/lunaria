@@ -17,7 +17,9 @@ from models.user_model import UserModel
 
 limiter = Limiter(key_func=get_remote_address)
 
-user_service = UserService(user_repository=UserRepository(session=Cluster().connect('users')))
+user_service = None
+
+user_service = user_service if user_service != None else UserService(user_repository=UserRepository(session=Cluster().connect('users')))
 
 secret_key = os.environ.get('SECRET_KEY')
 
@@ -43,8 +45,8 @@ def auth_required(allowed_roles:list[str]):
                 return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={
                     "message": "Missing token"
                 })
-            token = request.headers['Authorization'].replace('Bearer ', '')
             try:
+                token = request.headers['Authorization'].replace('Bearer ', '')
                 user = jwt.decode(token, str(secret_key), algorithms=["HS256"])
                 id = uuid.UUID(user['uid'])
                 user = user_service.get_user_by_id(UserModel, id)

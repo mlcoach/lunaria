@@ -10,4 +10,3 @@ class UserResponseDTO():
     lastName: str
     role: str
     is_active: bool
-    is_superuser: bool

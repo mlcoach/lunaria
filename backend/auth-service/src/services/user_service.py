@@ -1,7 +1,5 @@
 import datetime
-import hashlib
 
-from pyparsing import Optional
 from dto.register.user_register_request_dto import UserRegisterRequestDTO
 from dto.user_response_dto import UserResponseDTO
 from models.user_login_model import UserLoginModel
@@ -38,11 +36,9 @@ class UserService():
 
     def get_users(self):
         queries = self.user_repository.get_all(UserModel)
-        users = []
-        for user in queries:
-           users.append(self.mapToUserResponseModel(user))
+        users = [self.mapToUserResponseModel(user) for user in queries]
         return users
-
+    
     def mapToUserResponseModel(self, user):
         role = self.get_user_role_by_id(user.role).name
         return UserResponseDTO(
@@ -53,7 +49,6 @@ class UserService():
             lastName=user.lastName,
             role=role,
             is_active=user.is_active,
-            is_superuser=user.is_superuser,
         )
 
     
@@ -99,9 +94,8 @@ class UserService():
             user_model = map_schema(user, UserModel)
             user_login_model =  map_schema(user, UserLoginModel)
             user_login_model.uid = user_model.uid
-            user_role_uid = self.get_user_role_by_name("user").uid
-            admin_role_uid = self.get_user_role_by_name("admin").uid
-            user_model.role = admin_role_uid if user.is_superuser == True else user_role_uid
+            user_role_uid= self.get_user_role_by_name("user").uid
+            user_model.role = user_role_uid
             return user_model, user_login_model
         except Exception as e:
             raise Exception(e)

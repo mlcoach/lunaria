@@ -1,5 +1,4 @@
 import datetime
-from models.user_model import UserModel
 
 class UserRepository():
     def __init__(self, session):
