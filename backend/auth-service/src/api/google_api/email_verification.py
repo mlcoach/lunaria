@@ -9,11 +9,9 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from base64 import urlsafe_b64encode
 
-
 import jwt
 from models.user_login_model import UserLoginModel
 from requests import HTTPError
-import os
 
 SCOPES = ['https://mail.google.com/']
 GMAIL = str(os.getenv('GMAIL'))

@@ -7,7 +7,7 @@ from models.user_login_model import UserLoginModel
 from dto.register.user_register_request_dto import UserRegisterRequestDTO
 from api.google_api.email_verification import EmailVerification
 
-from ..dependencies import auth_required, limiter, user_service, secret_key
+from ..dependencies import auth_required, limiter, user_service
 
 router = APIRouter(
     prefix="/users",
@@ -31,12 +31,12 @@ async def get_users(request: Request):
         })
 
 
-@router.get("/{id}", status_code=200)
+@router.get("/{uid}", status_code=200)
 @limiter.limit("10/minute")
 @auth_required(allowed_roles=['admin', 'user'])
-async def get_user(user_id: UUID, request: Request):
+async def get_user(uid: UUID, request: Request):
     try:
-        user = user_service.get_user_by_id(UserModel, user_id)
+        user = user_service.get_user_by_id(UserModel, uid)
         return JSONResponse(status_code=status.HTTP_200_OK, content={
             user
         })
@@ -72,20 +72,26 @@ async def create_user(request: Request, userDTO: UserRegisterRequestDTO):
         raise Exception(e)
 
 
-@router.put("/{id}", status_code=200)
+@router.put("/{uid}", status_code=200)
 @limiter.limit("10/minute")
 @auth_required(allowed_roles=['admin', 'user'])
-async def update_user(user_id: UUID, request: Request, userDTO):
-    pass
+async def update_user(uid: UUID, request: Request, userDTO):
+    try:
+        user_service.update_user(uid, userDTO)
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"uid": uid})
+    except Exception as e:
+        return JSONResponse(status_code=status.HTTP_304_NOT_MODIFIED, content={
+            "message": "Invalid token"
+        })
 
 
-@router.delete("/{id}", status_code=200)
+@router.delete("/{uid}", status_code=200)
 @limiter.limit("50/minute")
 @auth_required(allowed_roles=['admin'])
-async def update(request: Request, user_id: UUID):
+async def update(request: Request, uid: UUID):
     try:
-        user_service.delete_user(user_id)
-        return JSONResponse(status_code=status.HTTP_200_OK, content={"uid": user_id})
+        user_service.delete_user(uid)
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"uid": uid})
     except Exception as e:
         return JSONResponse(status_code=status.HTTP_401_UNAUTHORIZED, content={
             "message": "Invalid token"
