@@ -20,11 +20,11 @@ client = TestClient(app)
 #   print(response.status_code)
 
 # def test_register():
-#   response = client.post("/auth/register", json={"username": "test", "password": "test", "email": "test@gmail.com", "firstName": "test", "lastName": "test", "role": "test", "is_active": True, "is_superuser": True})
+#   response = client.post("/auth/register", json={"username": "test", "password": "test", "email": "test@gmail.com", "firstName": "test", "lastName": "test", "role": "test"})
 #   assert response.status_code != 201
   
 # def test_register_conflict():
-#   response = client.post("/auth/register", json={"username": "test", "password": "test", "email": "test@gmail.com", "firstName": "test", "lastName": "test", "role": "test", "is_active": True, "is_superuser": True})
+#   response = client.post("/auth/register", json={"username": "test", "password": "test", "email": "test@gmail.com", "firstName": "test", "lastName": "test", "role": "test"})
 #   assert response.status_code == 409
   
 # def test_validation():
