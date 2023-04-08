@@ -1,3 +1,5 @@
+#TODO: Refactor the code using visitor code and reduce the usage of sql query string
+
 class ServiceRegisterRepo():
     def __init__(self, connection):
         self.connection = connection
